@@ -39,3 +39,51 @@ Make sure to install the required Python packages:
 
 ```bash
 pip install numpy matplotlib pandas scipy
+
+🧪 How It Works
+1. Load and Preprocess Data
+python
+Copy
+Edit
+data = pd.read_csv('All_data.csv')
+fsr_data = data['F-volt'].values[1601:1801]
+2. Bandpass Filter (5–200 Hz)
+python
+Copy
+Edit
+from scipy.signal import butter, filtfilt
+
+def butter_bandpass_filter(data, lowcut, highcut, fs, order):
+    nyq = 0.5 * fs
+    low = lowcut / nyq
+    high = highcut / nyq
+    b, a = butter(order, [low, high], btype='band')
+    return filtfilt(b, a, data)
+3. Spike Encoding
+FSR (FA1 and SA1)
+python
+Copy
+Edit
+fa1_spikes = np.where(filtered_signal > threshold)[0] / fs
+sa1_spikes = np.where(filtered_signal < -threshold)[0] / fs
+Vibration (FA2)
+python
+Copy
+Edit
+vib_fm = np.sin(2*np.pi*(carrier_freq + modulation_index * filtered_signal)*t)
+vib_spikes = np.where(vib_fm > threshold)[0] / fs
+Softpot (SA2)
+python
+Copy
+Edit
+sa2_spikes = np.where(filtered_softpot < -threshold)[0] / fs
+📊 Visualization
+Raw time-series data
+
+Raster plot of spike trains (color-coded by receptor type)
+
+python
+Copy
+Edit
+fig, ax = plt.subplots(figsize=(15, 5))
+ax.eventplot([fa1, sa1, vib, sa2], colors=['r', 'g', 'b', 'm'])
